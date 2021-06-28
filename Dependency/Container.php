@@ -18,17 +18,6 @@ use Fusio\Impl\Table;
  */
 class Container extends FusioContainer
 {
-	public function getTenantRegisterService(): Service\Tenancy\TenantRegister
-    {
-        return new Service\Tenancy\TenantRegister(
-            $this->get('user_service'),
-            $this->get('user_captcha_service'),
-            $this->get('user_token_service'),
-            $this->get('user_mailer_service'),
-            $this->get('config_service'),
-            $this->get('table_manager')->getTable(Table\Role::class)
-        );
-    }
 	
     public function getCommentService(): Service\Comment
     {
@@ -86,6 +75,31 @@ class Container extends FusioContainer
 	/**
 	Setup Tenancy Service
 	*/
+	public function getTenantRegisterService(): Service\Tenancy\TenantRegister
+    {
+        return new Service\Tenancy\TenantRegister(
+            $this->get('user_service'),
+            $this->get('user_captcha_service'),
+            $this->get('user_token_service'),
+            $this->get('user_mailer_service'),
+            $this->get('config_service'),
+            $this->get('table_manager')->getTable(Table\Role::class)
+        );
+    }
+	
+	public function getTenantMemberService(): Service\Tenancy\TenantMember
+    {
+        return new Service\Tenancy\TenantMember(
+            $this->get('user_service'),
+            $this->get('user_token_service'),
+            $this->get('user_mailer_service'),
+            $this->get('config_service'),
+            $this->get('table_manager')->getTable(Table\Role::class),
+			$this->get('table_manager')->getTable(Table\User::class),
+			$this->get('table_manager')->getTable(Table\User\Attribute::class)
+        );
+    }
+	
 	public function getTenancyService(): Service\Tenancy\Tenancy
 	{
 		return new Service\Tenancy\Tenancy(
