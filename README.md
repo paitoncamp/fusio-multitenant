@@ -1,2 +1,2 @@
 # fusio-multitenant
-implement fusio multitenant app
+manage multitenant app on fusio framework
