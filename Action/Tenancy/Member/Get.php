@@ -29,7 +29,7 @@ class Get extends ActionAbstract
 				(
 					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='member' AND NAME='tenant_role'
 				) members_role ON members_id.user_id = members_role.user_id
-				WHERE members_id.user_id=:member_id
+				WHERE members_id.user_id=:member_id and status<>0 
                 ORDER BY fusio_user.id ";
 
         $member = $connection->fetchAssoc($sql, [

@@ -30,7 +30,7 @@ class GetAll extends ActionAbstract
 				(
 					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='member' AND NAME='tenant_role'
 				) members_role ON members_id.user_id = members_role.user_id
-				WHERE 1=1
+				WHERE 1=1 and status<>0 
                 ORDER BY fusio_user.id ";
 
         $sql = $connection->getDatabasePlatform()->modifyLimitQuery($sql, 16);
