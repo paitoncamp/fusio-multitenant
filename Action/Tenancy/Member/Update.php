@@ -38,7 +38,7 @@ class Update extends ActionAbstract
         assert($body instanceof Member_Update);
 
         $this->tenantMemberService->update(
-            (int) $request->get('user_id'),
+            (int) $request->get('member_id'),
             $body,
             UserContext::newActionContext($context)
         );
