@@ -1,60 +1,55 @@
 <?php
-/*
- * Fusio
- * A web-application to create dynamically RESTful APIs
- *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-namespace Fusio\Impl\Backend\Action\User;
+namespace App\Action\Tenancy\Member;
 
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
-use Fusio\Impl\Backend\View;
-use PSX\Sql\TableManagerInterface;
+//use Fusio\Impl\Backend\View;
+//use PSX\Sql\TableManagerInterface;
 
-/**
- * GetAll
- *
- * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
- * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
- */
+
 class GetAll extends ActionAbstract
 {
-    /**
-     * @var View\User
-     */
-    private $table;
-
-    public function __construct(TableManagerInterface $tableManager)
-    {
-        $this->table = $tableManager->getTable(View\User::class);
-    }
 
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
-        return $this->table->getCollection(
-            (int) $request->get('startIndex'),
-            (int) $request->get('count'),
-            $request->get('search'),
-            $request->get('sortBy'),
-            $request->get('sortOrder')
-        );
+		$tenantId = $request->getHeader('tenantId');
+		$tenantId='84f5f82f-a199-4971-9eee-e77eff9643ad';
+         $connection = $this->connector->getConnection('System');
+
+        $sql = "SELECT fusio_user.* ,
+				  (SELECT VALUE FROM fusio_user_attribute WHERE NAME='first_name' AND user_id=fusio_user.id) AS first_name,
+				  (SELECT VALUE FROM fusio_user_attribute WHERE NAME='last_name' AND user_id=fusio_user.id) AS last_name,
+				  (SELECT VALUE FROM fusio_user_attribute WHERE NAME='tenant_role' AND user_id=fusio_user.id) AS tenant_role
+				FROM fusio_user INNER JOIN 
+				(
+					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='$tenantId' AND NAME='tenant_uid'
+				) members_id ON fusio_user.id=members_id.user_id
+				INNER JOIN 
+				(
+					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='member' AND NAME='tenant_role'
+				) members_role ON members_id.user_id = members_role.user_id
+				WHERE 1=1 and status<>0 
+                ORDER BY fusio_user.id ";
+
+        $sql = $connection->getDatabasePlatform()->modifyLimitQuery($sql, 16);
+
+        $count   = $connection->fetchColumn("SELECT COUNT(*)
+				FROM fusio_user INNER JOIN 
+				(
+					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='$tenantId' AND NAME='tenant_uid'
+				) members_id ON fusio_user.id=members_id.user_id
+				INNER JOIN 
+				(
+					SELECT USER_id FROM fusio_user_attribute WHERE VALUE='member' AND NAME='tenant_role'
+				) members_role ON members_id.user_id = members_role.user_id");
+				
+        $entries = $connection->fetchAll($sql);
+
+        return $this->response->build(200, [], [
+            'totalResults' => $count,
+            'entry' => $entries
+        ]);
     }
 }
