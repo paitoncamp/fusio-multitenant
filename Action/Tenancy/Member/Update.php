@@ -7,9 +7,7 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Impl\Authorization\UserContext;
-//use Fusio\Impl\Service\User;
 use App\Service\Tenancy\TenantMember;
-//use Fusio\Model\Backend\User_Update;
 use App\Model\Tenancy\Member_Update;
 use PSX\Http\Exception as StatusCode;
 
@@ -17,8 +15,6 @@ use PSX\Http\Exception as StatusCode;
  * Update
  *
  * @author  wira m.s <Senasana.wira@gmail.com>
- * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
  */
 class Update extends ActionAbstract
 {

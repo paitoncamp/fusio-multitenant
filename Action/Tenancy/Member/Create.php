@@ -26,17 +26,13 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Impl\Authorization\UserContext;
-//use Fusio\Impl\Service\User;
 use App\Service\Tenancy\TenantMember;
-//use Fusio\Model\Backend\User_Create;
 use App\Model\Tenancy\Member_Create;
 
 /**
  * Create
  *
  * @author  wira ms <senasana.wira@gmail.com>
- * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
  */
 class Create extends ActionAbstract
 {
