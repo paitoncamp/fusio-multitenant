@@ -9,6 +9,7 @@ use Fusio\Model\Backend\User_Create;
 use Fusio\Model\Backend\User_Update;
 use Fusio\Model\Backend\User_Attributes;
 use App\Model\Tenancy\Member_Create;
+use App\Model\Tenancy\Member_Update;
 use PSX\Http\Exception as StatusCode;
 use PSX\Sql\Condition;
 
@@ -72,8 +73,8 @@ class TenantMember
         $this->mailerService  = $mailerService;
         $this->configService  = $configService;
         $this->roleTable      = $roleTable;
-	$this->tenantOwnerTable      = $tenantOwnerTable;
-	$this->tenantOwnerAttrTable = $tenantOwnerAttrTable;
+		$this->tenantOwnerTable      = $tenantOwnerTable;
+		$this->tenantOwnerAttrTable = $tenantOwnerAttrTable;
     }
 
     public function create(Member_Create $member, ContextInterface $context)
@@ -100,29 +101,29 @@ class TenantMember
         $user->setEmail($member->getEmail());
         $user->setPassword($member->getPassword());
 		
-	//--search current tenant owner data 
-	$tenant = $context->getUser();
-	$condThisTenant = new Condition();
-	$condThisTenant->equals('id', $tenant->getId());
-	$tenantOwner = $this->tenantOwnerTable->getOneBy($condThisTenant);
-	$condThisTenantAttr = new Condition();
-	$condThisTenantAttr->equals('user_id',$tenant->getId());
-	$condThisTenantAttr->equals('name','tenant_uid');
+		//--search current tenant owner data 
+		$tenant = $context->getUser();
+		$condThisTenant = new Condition();
+		$condThisTenant->equals('id', $tenant->getId());
+		$tenantOwner = $this->tenantOwnerTable->getOneBy($condThisTenant);
+		$condThisTenantAttr = new Condition();
+		$condThisTenantAttr->equals('user_id',$tenant->getId());
+		$condThisTenantAttr->equals('name','tenant_uid');
 
-	$tenantOwnerAttr = $this->tenantOwnerAttrTable->getOneBy($condThisTenantAttr);
-	$userAttrs = new User_Attributes();
-	$userAttrs->setProperties(array('tenant_uid'=>$tenantOwnerAttr['value'],'tenant_role'=>'member'));
+		$tenantOwnerAttr = $this->tenantOwnerAttrTable->getOneBy($condThisTenantAttr);
+		$userAttrs = new User_Attributes();
+		$userAttrs->setProperties(array('tenant_uid'=>$tenantOwnerAttr['value'],'tenant_role'=>'member'));
 
-	$userUpd = new User_Update();
-	$userUpd->setRoleId($user->getRoleId());
-	$userUpd->setStatus($user->getStatus());
-	$userUpd->setName($user->getName());
-	$userUpd->setEmail($user->getEmail());
-	$userUpd->setAttributes($userAttrs);
+		$userUpd = new User_Update();
+		$userUpd->setRoleId($user->getRoleId());
+		$userUpd->setStatus($user->getStatus());
+		$userUpd->setName($user->getName());
+		$userUpd->setEmail($user->getEmail());
+		$userUpd->setAttributes($userAttrs);
 
-        $userId = $this->userService->create($user, UserContext::newActionContext($context));
-	//-- soon, update the current new user
-	if($userId)	$this->userService->update($userId,$userUpd,UserContext::newActionContext($context));
+			$userId = $this->userService->create($user, UserContext::newActionContext($context));
+		//-- soon, update the current new user
+		if($userId)	$this->userService->update($userId,$userUpd,UserContext::newActionContext($context));
 		
         // send activation mail
         if ($approval) {
@@ -131,5 +132,44 @@ class TenantMember
             $this->mailerService->sendActivationMail($token, $member->getName(), $member->getEmail());
         }
     }
+	
+	public function update(int $memberId, Member_Update $member, UserContext $context){
+		//-- TO DO
+		$existing = $this->tenantTable->get($memberId);
+        if (empty($existing)) {
+            throw new StatusCode\NotFoundException('Could not find user');
+        }
+
+        if ($member->getRoleId() === null) {
+            $member->setRoleId((int) $existing['role_id']);
+        }
+
+        if ($member->getStatus() === null) {
+            $member->setStatus($existing['status']);
+        }
+
+        if ($member->getName() === null) {
+            $member->setName($existing['name']);
+        }
+
+        // check values
+        Service\User\Validator::assertName($member->getName());
+        Service\User\Validator::assertEmail($member->getEmail());
+		Service\User\Validator::assertPassword($member->getPassword());
+		
+		//$userAttrs = new User_Attributes();
+		//$userAttrs->setProperties();
+
+        $userUpd = new User_Update();
+		$userUpd->setRoleId($member->getRoleId());
+		$userUpd->setStatus($member->getStatus());
+		$userUpd->setName($member->getName());
+		$userUpd->setEmail($member->getEmail());
+		$userUpd->setAttributes($member->getAttributes());
+
+        $this->userService->update($memberId,$userUpd,$context);
+
+        
+	}
 	
 }

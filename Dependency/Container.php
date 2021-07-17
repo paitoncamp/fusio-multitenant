@@ -100,6 +100,17 @@ class Container extends FusioContainer
         );
     }
 	
+	public function getTenantAppsService(): Service\Tenancy\TenantApps
+    {
+        return new Service\Tenancy\TenantApps(
+			$this->get('connector')->getConnection('System'),
+            $this->get('user_service'),
+			$this->get('table_manager')->getTable(Table\User::class),
+			$this->get('table_manager')->getTable(Table\User\Scope::class),
+			$this->get('table_manager')->getTable(Table\User\Attribute::class)
+        );
+    }
+	
 	public function getTenancyService(): Service\Tenancy\Tenancy
 	{
 		return new Service\Tenancy\Tenancy(
