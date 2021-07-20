@@ -8,11 +8,11 @@ use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
 
 /**
- * GetAll
+ * OwnerAppsInstalled
  *
  * @author  Wira M Sukoco <senasana.wira@gmail.com>
  */
-class GetAll extends ActionAbstract
+class OwnerAppsInstalled extends ActionAbstract
 {
 
 
@@ -40,19 +40,22 @@ class GetAll extends ActionAbstract
 			throw new StatusCode\NotFoundException('TenantId is not valid ');
 		}
 		
-		$sql="SELECT id, name, description,
-				EXISTS(select 1 from fusio_user_scope where scope_id=fusio_scope.id and user_id=:owner_id) as installed
-			  FROM fusio_scope 
-			  WHERE status=1 and category_id=1 and name like 'app-%' 
-			  ORDER BY id ";
+		$sql="SELECT fusio_scope.id, fusio_scope.name, fusio_scope.description,
+				EXISTS(select 1 from fusio_user_scope where scope_id=fusio_scope.id and user_id=:member_id) as installed
+			  FROM fusio_scope inner join fusio_user_scope on fusio_scope.id=fusio_user_scope.scope_id 
+			  WHERE fusio_scope.status=1 and fusio_scope.category_id=1 and fusio_scope.name like 'app-%' and fusio_user_scope.user_id=:owner_id
+			  ORDER BY fusio_scope.id ";
 			  
 		$sql = $connection->getDatabasePlatform()->modifyLimitQuery($sql, 16);
 
         $count   = $connection->fetchColumn("SELECT COUNT(*)
-				FROM fusio_scope 
-			  WHERE status=1 and category_id=1 and name like 'app-%' ");
+				FROM fusio_scope inner join fusio_user_scope on fusio_scope.id=fusio_user_scope.scope_id 
+			  WHERE fusio_scope.status=1 and fusio_scope.category_id=1 and fusio_scope.name like 'app-%' and fusio_user_scope.user_id=:owner_id
+			  ",
+			  ["owner_id"=>$ownerId]);
 				
         $entries = $connection->fetchAll($sql,[
+				"member_id"=>$request->get("member_id"),
 				"owner_id"=>$ownerId]);
 
 		return $this->response->build(200, [], [

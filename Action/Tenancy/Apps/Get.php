@@ -19,6 +19,7 @@ class Get extends ActionAbstract
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
 		$tenantId = $request->getHeader('tenantId');
+		$ownerId = $context->getUser()->getId();
         $connection = $this->connector->getConnection('System');
 		//check whether current tenantId is exists otherwise reject this request 
 		$isTenantExists   = $connection->fetchColumn("SELECT COUNT(*)
@@ -32,7 +33,7 @@ class Get extends ActionAbstract
 				) members_role ON members_id.user_id = members_role.user_id 
 				WHERE fusio_user.id=:current_user_id",
 				[
-				"current_user_id"=>$context->getUser()->getId(),
+				"current_user_id"=>$ownerId,
 				"tenant_id"=>$tenantId
 				]);
 		if($isTenantExists==0){
@@ -41,14 +42,15 @@ class Get extends ActionAbstract
 		
 		
         $sql = "SELECT id, name, description,
-				EXISTS(select 1 from fusio_user_scope where scope_id=fusio_scope.id) as installed 
+				EXISTS(select 1 from fusio_user_scope where scope_id=fusio_scope.id and user_id=:owner_id) as installed 
 			  FROM fusio_scope 
 			  WHERE status=1 and category_id=1 and name like 'app-%' 
 			  and id=:app_id 
 			  ORDER BY id ";
 
         $app = $connection->fetchAssoc($sql, [
-            'app_id' => $request->get('app_id')
+            'app_id' => $request->get('app_id'),
+			"owner_id"=>$ownerId
         ]);
 		if (empty($app)) {
             throw new StatusCode\NotFoundException('App is not available');

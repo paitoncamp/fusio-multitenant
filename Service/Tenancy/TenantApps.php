@@ -70,10 +70,6 @@ class TenantApps
             throw new StatusCode\NotFoundException('Could not find tenant owner id');
         }
 		
-        //$apps->setRoleId((int) $existing['role_id']);
-        //$apps->setStatus($existing['status']);
-        //$apps->setName($existing['name']);
-		//$apps->setEmail($existing['email']);
 		
 		$allUserAttrCond = new Condition();
         $allUserAttrCond->equals('user_id', $ownerId);	
@@ -85,17 +81,11 @@ class TenantApps
 		$tenantUidAttrCond->equals('name','tenant_uid');
 		$tenantUidAttr =  $this->tenantAttrTable->getOneBy($tenantUidAttrCond);
 		$tenant_uid = $tenantUidAttr['value'];
-		//echo $tenant_uid;
+
 		$transformer = new Transformer();
 		$existingUserAttr = new User_Attributes();
 		$existingUserAttr->setProperties($transformer->toArray($allUserAttr));
-		//$apps->setAttributes($this->tenantAttrTable->getBy($userAttrCond));
-		
-		//$userScopesCond = new Condition();
-        //$userScopesCond->equals('user_id', $ownerId);
-		// TO DO 
-		// - combine current user available scopes and apps scopes 
-		// - create app db based on apps scopes selected
+
 		
 		$currentScopes = array_values($this->getAvailableScopes($ownerId));
 		if(in_array($app,$currentScopes)){
@@ -104,7 +94,7 @@ class TenantApps
 		//add new app_scope into current scope
 		$appsScopes = array_merge($currentScopes,array($app));
 		
-		//print_r($appsScopes);
+
 		
         $userUpd = new User_Update();
 		$userUpd->setRoleId((int) $existing['role_id']);
@@ -132,10 +122,7 @@ class TenantApps
             throw new StatusCode\NotFoundException('Could not find tenant owner id');
         }
 		
-        //$apps->setRoleId((int) $existing['role_id']);
-        //$apps->setStatus($existing['status']);
-        //$apps->setName($existing['name']);
-		//$apps->setEmail($existing['email']);
+
 		
 		$allUserAttrCond = new Condition();
         $allUserAttrCond->equals('user_id', $ownerId);	
@@ -147,17 +134,11 @@ class TenantApps
 		$tenantUidAttrCond->equals('name','tenant_uid');
 		$tenantUidAttr =  $this->tenantAttrTable->getOneBy($tenantUidAttrCond);
 		$tenant_uid = $tenantUidAttr['value'];
-		//echo $tenant_uid;
+
 		$transformer = new Transformer();
 		$existingUserAttr = new User_Attributes();
 		$existingUserAttr->setProperties($transformer->toArray($allUserAttr));
-		//$apps->setAttributes($this->tenantAttrTable->getBy($userAttrCond));
-		
-		//$userScopesCond = new Condition();
-        //$userScopesCond->equals('user_id', $ownerId);
-		// TO DO 
-		// - combine current user available scopes and apps scopes 
-		// - create app db based on apps scopes selected
+
 		
 		$currentScopes = array_values($this->getAvailableScopes($ownerId));
 		if(!in_array($app,$currentScopes)){
@@ -166,7 +147,6 @@ class TenantApps
 		//remove  app_scope from current scope
 		$appsScopes = array_diff($currentScopes,array($app));
 		
-		//print_r($appsScopes);
 		
         $userUpd = new User_Update();
 		$userUpd->setRoleId((int) $existing['role_id']);

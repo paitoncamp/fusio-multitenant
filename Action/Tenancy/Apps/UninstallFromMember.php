@@ -8,15 +8,15 @@ use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Impl\Authorization\UserContext;
 use App\Service\Tenancy\TenantApps;
-//use App\Model\Tenancy\Apps_Update;
+
 use PSX\Http\Exception as StatusCode;
 
 /**
- * Install
+ * UnInstall
  *
  * @author  wira m.s <Senasana.wira@gmail.com>
  */
-class InstallUninstall extends ActionAbstract
+class UnInstallFromMember extends ActionAbstract
 {
     /**
      * @var TenantApps
@@ -31,6 +31,7 @@ class InstallUninstall extends ActionAbstract
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
 		$tenantId = $request->getHeader('tenantId');
+				$memberId = $request->get('member_id');
 		$ownerId = $context->getUser()->getId();
 		$connection = $this->connector->getConnection('System');
 
@@ -50,7 +51,7 @@ class InstallUninstall extends ActionAbstract
                 ORDER BY fusio_user.id ";
 
         $owner = $connection->fetchAssoc($sql, [
-            'owner_id' => $owner_id,
+            'owner_id' => $ownerId,
 			'tenant_id' => $tenantId
         ]);
 		//if current ID is owner of current tenant, continue to update its data otherwise reject
@@ -58,19 +59,18 @@ class InstallUninstall extends ActionAbstract
             throw new StatusCode\NotFoundException('Current User is not tenant owner');
         }
 		
-        //$body = $request->getPayload();
 
-        //assert($body instanceof Apps_Update);
 
-        $this->tenantAppsService->install(
-            (int) $owner_id,
-            (string) $$request->get('app_name'),
-            UserContext::newActionContext($context)
+        $this->tenantAppsService->uninstall(
+            (int) $memberId,
+            (string) $request->get('app_name'),
+            UserContext::newActionContext($context),
+			false //do not delete db
         );
 
         return [
             'success' => true,
-            'message' => 'App successful installed',
+            'message' => 'App successful uninstalled',
         ];
     }
 }

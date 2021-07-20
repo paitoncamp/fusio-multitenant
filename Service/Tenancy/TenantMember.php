@@ -155,10 +155,9 @@ class TenantMember
         // check values
         Service\User\Validator::assertName($member->getName());
         Service\User\Validator::assertEmail($member->getEmail());
-		Service\User\Validator::assertPassword($member->getPassword());
 		
-		//$userAttrs = new User_Attributes();
-		//$userAttrs->setProperties();
+		
+		
 
         $userUpd = new User_Update();
 		$userUpd->setRoleId($member->getRoleId());

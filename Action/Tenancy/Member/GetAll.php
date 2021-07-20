@@ -47,7 +47,18 @@ class GetAll extends ActionAbstract
 				) members_role ON members_id.user_id = members_role.user_id",
 				["tenant_id"=>$tenantId]);
 				
-        $entries = $connection->fetchAll($sql,["tenant_id"=>$tenantId]);
+		$sqlInstalledAppsOnMember = "SELECT fusio_scope.id, fusio_scope.name, fusio_scope.description
+			  FROM fusio_scope inner join fusio_user_scope on fusio_scope.id=fusio_user_scope.scope_id 
+			  WHERE fusio_scope.status=1 and fusio_scope.category_id=1 and fusio_scope.name like 'app-%' and fusio_user_scope.user_id=:member_id
+			  ORDER BY fusio_scope.id ";
+		
+        $members = $connection->fetchAll($sql,["tenant_id"=>$tenantId]);
+		$entries=array();
+		foreach ($members as $member){
+			$installedApps = $connection->fetchAll($sqlInstalledAppsOnMember,["member_id"=>$member["id"]]);
+			$member['memberapps']=$installedApps;
+			$entries[]=$member;
+		}
 
         return $this->response->build(200, [], [
             'totalResults' => $count,

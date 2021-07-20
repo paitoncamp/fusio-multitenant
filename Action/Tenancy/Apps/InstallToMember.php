@@ -8,15 +8,15 @@ use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use Fusio\Impl\Authorization\UserContext;
 use App\Service\Tenancy\TenantApps;
-//use App\Model\Tenancy\Apps_Update;
+
 use PSX\Http\Exception as StatusCode;
 
 /**
- * Install
+ * Install To Member
  *
  * @author  wira m.s <Senasana.wira@gmail.com>
  */
-class Install extends ActionAbstract
+class InstallToMember extends ActionAbstract
 {
     /**
      * @var TenantApps
@@ -31,6 +31,7 @@ class Install extends ActionAbstract
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
     {
 		$tenantId = $request->getHeader('tenantId');
+		$memberId = $request->get('member_id');
 		$ownerId = $context->getUser()->getId();
 		$connection = $this->connector->getConnection('System');
 
@@ -61,9 +62,10 @@ class Install extends ActionAbstract
 
 
         $this->tenantAppsService->install(
-            (int) $ownerId,
+            (int) $memberId,
             (string) $request->get('app_name'),
-            UserContext::newActionContext($context)
+            UserContext::newActionContext($context),
+			false  //do not create db
         );
 
         return [
