@@ -171,4 +171,13 @@ class TenantMember
         
 	}
 	
+	public function checkCurrentUserIsTenant($userId,$tenantId){
+		
+		$condition = new Condition();
+		$condition->equals("user_id",$userId);
+		$condition->equals("name","tenant_uid");
+		$condition->equals("value",$tenantId);
+		return $this->tenantOwnerAttrTable->getOneBy($condition);
+	}
+	
 }
